@@ -1,0 +1,51 @@
+<div class="quiz-container">
+    @if (loading) {
+    <div class="card">
+        <p class="loading">Loading quiz...</p>
+    </div>
+    } @else if (submitted) {
+    <!-- Results -->
+    <div class="card results-card">
+        <h1>Quiz Completed!</h1>
+        <div class="score-display">
+            <div class="score-circle">
+                <span class="score">{{ score }}</span>
+                <span class="total">/ {{ totalQuestions }}</span>
+            </div>
+            <p class="percentage">{{ ((score / totalQuestions) * 100).toFixed(1) }}%</p>
+        </div>
+        <button class="btn btn-primary" (click)="backToDashboard()">
+            Back to Dashboard
+        </button>
+    </div>
+    } @else if (quiz) {
+    <!-- Quiz Questions -->
+    <div class="card quiz-card">
+        <h1>{{ quiz.title }}</h1>
+        <p class="quiz-info">{{ totalQuestions }} questions</p>
+
+        <div class="questions-container">
+            @for (question of quiz.questions; track $index; let qIndex = $index) {
+            <div class="question">
+                <h3>Question {{ qIndex + 1 }}</h3>
+                <p class="question-text">{{ question.questionText }}</p>
+
+                <div class="options">
+                    @for (option of question.options; track $index; let oIndex = $index) {
+                    <div class="option" [class.selected]="answers[qIndex] === oIndex"
+                        (click)="selectAnswer(qIndex, oIndex)">
+                        <span class="option-letter">{{ getOptionLetter(oIndex) }}</span>
+                        <span class="option-text">{{ option }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+        <button class="btn btn-primary submit-btn" (click)="submitQuiz()">
+            Submit Quiz
+        </button>
+    </div>
+    }
+</div>

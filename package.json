@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "npm run start --prefix quiz-app/frontend",
+    "build": "npm run build --prefix quiz-app/frontend"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

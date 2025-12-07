@@ -1,0 +1,30 @@
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Student Dashboard</h1>
+        <button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
+    </div>
+
+    <div class="content">
+        <div class="card">
+            <h2>Available Quizzes</h2>
+
+            @if (loading) {
+            <p class="loading">Loading quizzes...</p>
+            } @else if (quizzes.length === 0) {
+            <p class="no-quizzes">No quizzes available yet</p>
+            } @else {
+            <div class="quiz-grid">
+                @for (quiz of quizzes; track quiz.id) {
+                <div class="quiz-card">
+                    <h3>{{ quiz.title }}</h3>
+                    <p class="quiz-info">{{ quiz.questions.length }} questions</p>
+                    <button class="btn btn-primary" (click)="takeQuiz(quiz.id!)">
+                        Take Quiz
+                    </button>
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+</div>

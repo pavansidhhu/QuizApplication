@@ -1,0 +1,91 @@
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
+    </div>
+
+    <div class="content">
+        <!-- Upload Quiz Section -->
+        <div class="card">
+            <h2>Upload New Quiz</h2>
+            <form (ngSubmit)="uploadQuiz()">
+                <div class="form-group">
+                    <label for="quizTitle">Quiz Title</label>
+                    <input type="text" id="quizTitle" name="quizTitle" [(ngModel)]="quizTitle" class="form-control"
+                        placeholder="Enter quiz title" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="pdfFile">PDF File</label>
+                    <input type="file" id="pdfFile" accept=".pdf" (change)="onFileSelected($event)" class="form-control"
+                        required />
+                    @if (selectedFile) {
+                    <p class="file-selected">Selected: {{ selectedFile.name }}</p>
+                    }
+                </div>
+
+                @if (uploadMessage) {
+                <div class="success-message">{{ uploadMessage }}</div>
+                }
+
+                <button type="submit" class="btn btn-primary" [disabled]="loading">
+                    @if (loading) {
+                    <span>Uploading...</span>
+                    } @else {
+                    <span>Upload Quiz</span>
+                    }
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card">
+            <h2>Student Results</h2>
+            @if (results.length === 0) {
+            <p class="no-results">No results yet</p>
+            } @else {
+            <div class="results-by-quiz">
+                @for (quizTitle of quizTitles; track quizTitle) {
+                <div class="quiz-results-section">
+                    <h3 class="quiz-title-header">{{ quizTitle }}</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Score</th>
+                                    <th>Percentage</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (result of groupedResults[quizTitle]; track result.id) {
+                                <tr>
+                                    <td>{{ result.studentName }}</td>
+                                    <td>{{ result.score }} / {{ result.totalQuestions }}</td>
+                                    <td>{{ ((result.score / result.totalQuestions) * 100).toFixed(1) }}%</td>
+                                    <td>
+                                        @if ((result.score / result.totalQuestions) * 100 >= 90) {
+                                        <span class="grade grade-a">A</span>
+                                        } @else if ((result.score / result.totalQuestions) * 100 >= 80) {
+                                        <span class="grade grade-b">B</span>
+                                        } @else if ((result.score / result.totalQuestions) * 100 >= 70) {
+                                        <span class="grade grade-c">C</span>
+                                        } @else if ((result.score / result.totalQuestions) * 100 >= 60) {
+                                        <span class="grade grade-d">D</span>
+                                        } @else {
+                                        <span class="grade grade-f">F</span>
+                                        }
+                                    </td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+</div>

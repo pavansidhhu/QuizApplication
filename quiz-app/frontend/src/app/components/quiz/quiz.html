@@ -1,0 +1,33 @@
+<div class="quiz-container">
+    <div class="content" *ngIf="loading">
+        <p>Loading quiz...</p>
+    </div>
+
+    <div class="content" *ngIf="!loading && quiz && !result">
+        <h2>{{ quiz.title }}</h2>
+
+        <div class="question-card" *ngFor="let question of quiz.questions; let i = index">
+            <p class="question-text"><strong>Q{{ i + 1 }}:</strong> {{ question.questionText }}</p>
+            <div class="options">
+                <div class="option" *ngFor="let option of question.options; let j = index">
+                    <label>
+                        <input type="radio" [name]="'question' + i" [value]="j" [(ngModel)]="answers[i]">
+                        {{ option }}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button class="submit-btn" (click)="submitQuiz()">Submit Quiz</button>
+    </div>
+
+    <div class="result-card" *ngIf="result">
+        <h2>Quiz Completed!</h2>
+        <div class="score-circle">
+            <span class="score">{{ result.score }}</span>
+            <span class="total">/ {{ result.totalQuestions }}</span>
+        </div>
+        <p>Great job, {{ result.studentName }}!</p>
+        <button (click)="goBack()">Back to Dashboard</button>
+    </div>
+</div>
