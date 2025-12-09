@@ -1,12 +1,13 @@
-# Use Maven image to build the application
-FROM maven:3.8.6-openjdk-17 AS build
+# Use a reliable Maven image with Java 17
+FROM maven:3.9-eclipse-temurin-17 AS build
 
 # Set working directory
 WORKDIR /app
 
 # Copy pom.xml and download dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline
+# Go offline to cache dependencies
+RUN mvn dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
@@ -14,8 +15,8 @@ COPY src ./src
 # Build the application
 RUN mvn clean package -DskipTests
 
-# Use OpenJDK for runtime
-FROM openjdk:17-jdk-slim
+# Use a reliable and lightweight JRE for runtime
+FROM eclipse-temurin:17-jre-jammy
 
 # Set working directory
 WORKDIR /app
