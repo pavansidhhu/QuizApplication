@@ -39,18 +39,24 @@ public class PdfService {
 
                 if (line.startsWith("Question") || QUESTION_PATTERN.matcher(line).matches()) {
                     if (currentQuestion != null) {
+                        if (currentQuestion.getCorrectOptionIndex() == -1) {
+                            // Try to infer answer if not found explicitly (advanced logic could go here)
+                            // For now, valid question must have an answer
+                            System.err.println(
+                                    "Warning: No answer found for question: " + currentQuestion.getQuestionText());
+                        }
                         currentQuestion.setOptions(new ArrayList<>(currentOptions));
                         questions.add(currentQuestion);
                     }
                     currentQuestion = new Question();
                     currentQuestion.setQuestionText(line);
                     currentOptions.clear();
-                } else if (line.startsWith("A)") || line.startsWith("B)") || line.startsWith("C)")
-                        || line.startsWith("D)")) {
+                } else if (line.matches("^[A-D]\\).*")) {
                     currentOptions.add(line);
-                } else if (line.startsWith("Answer:")) {
+                } else if (line.matches("(?i)^(Answer|Ans|Correct Option)[:\\s-]*[A-D].*")) {
                     if (currentQuestion != null) {
-                        String answer = line.substring(7).trim();
+                        String answer = line.replaceAll("(?i)^(Answer|Ans|Correct Option)[:\\s-]*", "").trim()
+                                .substring(0, 1);
                         int correctIndex = -1;
                         if (answer.equalsIgnoreCase("A"))
                             correctIndex = 0;

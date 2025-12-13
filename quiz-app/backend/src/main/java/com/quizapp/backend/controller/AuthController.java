@@ -16,14 +16,15 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             return ResponseEntity.ok(userService.register(user));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", "DEBUG HELP: "
-                    + e.getMessage() + " | Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "None")));
+            String errorMessage = "DEBUG HELP: " + e.getMessage() + " | Cause: "
+                    + (e.getCause() != null ? e.getCause().getMessage() : "None");
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Collections.singletonMap("message", errorMessage));
         }
     }
 
@@ -37,8 +38,10 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(java.util.Collections.singletonMap("message", "DEBUG HELP: "
-                    + e.getMessage() + " | Cause: " + (e.getCause() != null ? e.getCause().getMessage() : "None")));
+            String errorMessage = "DEBUG HELP: " + e.getMessage() + " | Cause: "
+                    + (e.getCause() != null ? e.getCause().getMessage() : "None");
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Collections.singletonMap("message", errorMessage));
         }
     }
 }

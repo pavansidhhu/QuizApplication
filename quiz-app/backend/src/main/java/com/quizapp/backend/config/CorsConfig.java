@@ -14,12 +14,12 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns(
+                        .allowedOrigins(
                                 "http://localhost:4200",
                                 "http://127.0.0.1:4200",
                                 "http://localhost:62323",
                                 "http://127.0.0.1:62323",
-                                "https://*.onrender.com")
+                                "https://seven-areas-cut.loca.lt")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
