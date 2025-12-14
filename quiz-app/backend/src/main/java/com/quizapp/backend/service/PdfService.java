@@ -31,7 +31,8 @@ public class PdfService {
                 if (line.isEmpty())
                     continue;
 
-                if (line.startsWith("Question") || QUESTION_PATTERN.matcher(line).matches()) {
+                // Flexible matching for headings
+                if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
                     if (currentQuestion != null) {
                         if (currentQuestion.getCorrectOptionIndex() == -1) {
                             System.err.println(
@@ -42,18 +43,25 @@ public class PdfService {
                     }
                     currentQuestion = new Question();
                     currentQuestion.setQuestionText(line);
-                    currentOptions.clear();
-                } else if (line.matches("^[A-D]\\).*")) {
-                    currentOptions.add(line);
-                } else if (line.matches("(?i).*\\b(Answer|Ans|Correct Option)[:\\s-]*[A-D].*")) {
+                    currentOptions.clear(); // Flexible option matching: A) A. (A) a) a. (a)
+                } else if (line.matches("^\\s*[\\(]?[A-Da-d][\\)\\.]\\s+.*")) {
+                    currentOptions.add(line); // Flexible answer matching: Answer:, Ans:, Key:, Correct:, with/without
+                                              // parens
+                } else if (line
+                        .matches("(?i).*\\b(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*[\\(]?[A-Da-d][\\)]?.*")) {
                     if (currentQuestion != null) {
                         String answerLine = line.trim();
                         char answerChar = ' ';
 
+                        // Extract the letter using a capturing group
                         java.util.regex.Matcher m = java.util.regex.Pattern
-                                .compile("(?i)(Answer|Ans|Correct Option)[:\\s-]*([A-D])").matcher(answerLine);
+                                .compile("(?i)(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
+                                .matcher(answerLine);
                         while (m.find()) {
-                            answerChar = m.group(2).charAt(0);
+                            String captured = m.group(2).replaceAll("[\\(\\)]", ""); // Remove parens
+                            if (!captured.isEmpty()) {
+                                answerChar = captured.charAt(0);
+                            }
                         }
 
                         if (answerChar != ' ') {
