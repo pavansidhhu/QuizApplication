@@ -21,10 +21,8 @@ public class AuthController {
             return ResponseEntity.ok(userService.register(user));
         } catch (Exception e) {
             e.printStackTrace();
-            String errorMessage = "DEBUG HELP: " + e.getMessage() + " | Cause: "
-                    + (e.getCause() != null ? e.getCause().getMessage() : "None");
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Collections.singletonMap("message", errorMessage));
+            String errorMessage = "error in register";
+            return ResponseEntity.ok(errorMessage);
         }
     }
 
@@ -38,10 +36,8 @@ public class AuthController {
             return ResponseEntity.status(401).build();
         } catch (Exception e) {
             e.printStackTrace();
-            String errorMessage = "DEBUG HELP: " + e.getMessage() + " | Cause: "
-                    + (e.getCause() != null ? e.getCause().getMessage() : "None");
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Collections.singletonMap("message", errorMessage));
+            String errorMessage = "error in login";
+            return ResponseEntity.ok(errorMessage);
         }
     }
 }
