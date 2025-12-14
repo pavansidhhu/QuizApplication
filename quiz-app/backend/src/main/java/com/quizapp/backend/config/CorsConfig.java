@@ -19,7 +19,8 @@ public class CorsConfig {
                                 "http://127.0.0.1:4200",
                                 "http://localhost:62323",
                                 "http://127.0.0.1:62323",
-                                "https://seven-areas-cut.loca.lt")
+                                "https://seven-areas-cut.loca.lt",
+                                "https://quizapplicationfrontendclg.onrender.com")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
