@@ -14,13 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                                "http://localhost:4200",
-                                "http://127.0.0.1:4200",
-                                "http://localhost:62323",
-                                "http://127.0.0.1:62323",
-                                "https://seven-areas-cut.loca.lt",
-                                "https://quizapplicationfrontendclg.onrender.com")
+                        .allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
