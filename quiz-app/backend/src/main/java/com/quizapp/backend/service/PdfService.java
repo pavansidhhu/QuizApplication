@@ -8,9 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import java.util.List;
-
 import java.util.regex.Pattern;
 
 @Service
@@ -22,13 +20,9 @@ public class PdfService {
         List<Question> questions = new ArrayList<>();
         try (PDDocument document = PDDocument.load(file.getInputStream())) {
             PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(document);
+            String fullText = stripper.getText(document);
 
-            // Simple parsing logic based on "Question" keyword and "Answer:" keyword
-            // This is a naive implementation for demonstration.
-            // Real-world PDF parsing is much more complex.
-
-            String[] lines = text.split("\\r?\\n");
+            String[] lines = fullText.split("\\r?\\n");
             Question currentQuestion = null;
             List<String> currentOptions = new ArrayList<>();
 
@@ -40,8 +34,6 @@ public class PdfService {
                 if (line.startsWith("Question") || QUESTION_PATTERN.matcher(line).matches()) {
                     if (currentQuestion != null) {
                         if (currentQuestion.getCorrectOptionIndex() == -1) {
-                            // Try to infer answer if not found explicitly (advanced logic could go here)
-                            // For now, valid question must have an answer
                             System.err.println(
                                     "Warning: No answer found for question: " + currentQuestion.getQuestionText());
                         }
@@ -53,25 +45,37 @@ public class PdfService {
                     currentOptions.clear();
                 } else if (line.matches("^[A-D]\\).*")) {
                     currentOptions.add(line);
-                } else if (line.matches("(?i)^(Answer|Ans|Correct Option)[:\\s-]*[A-D].*")) {
+                } else if (line.matches("(?i).*\\b(Answer|Ans|Correct Option)[:\\s-]*[A-D].*")) {
                     if (currentQuestion != null) {
-                        String answer = line.replaceAll("(?i)^(Answer|Ans|Correct Option)[:\\s-]*", "").trim()
-                                .substring(0, 1);
-                        int correctIndex = -1;
-                        if (answer.equalsIgnoreCase("A"))
-                            correctIndex = 0;
-                        else if (answer.equalsIgnoreCase("B"))
-                            correctIndex = 1;
-                        else if (answer.equalsIgnoreCase("C"))
-                            correctIndex = 2;
-                        else if (answer.equalsIgnoreCase("D"))
-                            correctIndex = 3;
-                        currentQuestion.setCorrectOptionIndex(correctIndex);
+                        String answerLine = line.trim();
+                        char answerChar = ' ';
+
+                        java.util.regex.Matcher m = java.util.regex.Pattern
+                                .compile("(?i)(Answer|Ans|Correct Option)[:\\s-]*([A-D])").matcher(answerLine);
+                        while (m.find()) {
+                            answerChar = m.group(2).charAt(0);
+                        }
+
+                        if (answerChar != ' ') {
+                            int correctIndex = -1;
+                            if (answerChar == 'A' || answerChar == 'a')
+                                correctIndex = 0;
+                            else if (answerChar == 'B' || answerChar == 'b')
+                                correctIndex = 1;
+                            else if (answerChar == 'C' || answerChar == 'c')
+                                correctIndex = 2;
+                            else if (answerChar == 'D' || answerChar == 'd')
+                                correctIndex = 3;
+                            currentQuestion.setCorrectOptionIndex(correctIndex);
+                        }
                     }
                 }
             }
-            // Add the last question
             if (currentQuestion != null) {
+                if (currentQuestion.getCorrectOptionIndex() == -1) {
+                    System.err.println(
+                            "Warning: No answer found for last question: " + currentQuestion.getQuestionText());
+                }
                 currentQuestion.setOptions(new ArrayList<>(currentOptions));
                 questions.add(currentQuestion);
             }
