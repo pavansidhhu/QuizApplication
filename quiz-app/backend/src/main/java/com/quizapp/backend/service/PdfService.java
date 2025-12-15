@@ -49,14 +49,16 @@ public class PdfService {
                     currentOptions.add(line); // Flexible answer matching: Answer:, Ans:, Key:, Correct:, with/without
                                               // parens
                 } else if (line
-                        .matches("(?i).*\\b(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*[\\(]?[A-Da-d][\\)]?.*")) {
+                        .matches(
+                                "(?i).*\\b(Answer|Ans|Correct|Correct Answer|Correct Option|Key)[:\\s-]*[\\(]?[A-Da-d][\\)]?.*")) {
                     if (currentQuestion != null) {
                         String answerLine = line.trim();
                         char answerChar = ' ';
 
                         // Extract the letter using a capturing group
                         java.util.regex.Matcher m = java.util.regex.Pattern
-                                .compile("(?i)(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
+                                .compile(
+                                        "(?i)(Answer|Ans|Correct|Correct Answer|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
                                 .matcher(answerLine);
                         while (m.find()) {
                             String captured = m.group(2).replaceAll("[\\(\\)]", ""); // Remove parens
