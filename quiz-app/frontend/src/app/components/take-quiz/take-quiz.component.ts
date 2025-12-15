@@ -47,6 +47,7 @@ export class TakeQuizComponent implements OnInit {
             }
         });
     }
+    answers: number[] = [];
 
     selectAnswer(questionIndex: number, optionIndex: number) {
         this.answers[questionIndex] = optionIndex;
