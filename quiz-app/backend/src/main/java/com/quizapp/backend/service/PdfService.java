@@ -18,7 +18,6 @@ public class PdfService {
 
     public List<Question> parsePdf(MultipartFile file) throws IOException {
         List<Question> questions = new ArrayList<>();
-
         try (PDDocument document = PDDocument.load(file.getInputStream())) {
             PDFTextStripper stripper = new PDFTextStripper();
             String fullText = stripper.getText(document);
@@ -32,64 +31,64 @@ public class PdfService {
                 if (line.isEmpty())
                     continue;
 
-                // Question line
-                if (line.matches("(?i)^(Question|Q)[:\\.]?.*")
-                        || QUESTION_PATTERN.matcher(line).matches()) {
-
+                // Flexible matching for headings
+                if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
                     if (currentQuestion != null) {
                         if (currentQuestion.getCorrectOptionIndex() == -1) {
                             System.err.println(
-                                    "Warning: No answer found for question: "
-                                            + currentQuestion.getQuestionText());
+                                    "Warning: No answer found for question: " + currentQuestion.getQuestionText());
                         }
                         currentQuestion.setOptions(new ArrayList<>(currentOptions));
                         questions.add(currentQuestion);
                     }
-
                     currentQuestion = new Question();
                     currentQuestion.setQuestionText(line);
                     currentQuestion.setCorrectOptionIndex(-1);
-                    currentOptions.clear();
-                }
-
-                // Option line  Pavan Sidhhujbjukbduovburovbhuorvbhuorhvbuorhuvbo
-               else if (line.matches("^\\s*[A-Da-d][\\)\\.]\\s+.+")
-        && !line.toLowerCase().startsWith("correct")) {
-{
-
-                    currentOptions.add(
-                            line.replaceFirst("^[A-Da-d][\\)\\.\\s]+", "").trim()
-                    );
-                }
-
-                // Correct answer line
-                else if (line.toLowerCase().startsWith("correct answer")) {
+                    currentOptions.clear(); // Flexible option matching: A) A. (A) a) a. (a)
+                } else if (line.matches("^\\s*[\\(]?[A-Da-d][\\)\\.]\\s+.*")) {
+                    currentOptions.add(line); // Flexible answer matching: Answer:, Ans:, Key:, Correct:, with/without
+                                              // parens
+                } else if (line
+                        .matches("(?i).*\\b(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*[\\(]?[A-Da-d][\\)]?.*")) {
                     if (currentQuestion != null) {
-                        java.util.regex.Matcher matcher = java.util.regex.Pattern
-                                .compile("(?i)correct answer\\s*[:\\-]?\\s*([A-D])")
-                                .matcher(line);
+                        String answerLine = line.trim();
+                        char answerChar = ' ';
 
-                        if (matcher.find()) {
-                            char answerChar = matcher.group(1).charAt(0);
-                            int correctIndex = answerChar - 'A'; // A=0, B=1, C=2, D=3
+                        // Extract the letter using a capturing group
+                        java.util.regex.Matcher m = java.util.regex.Pattern
+                                .compile("(?i)(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
+                                .matcher(answerLine);
+                        while (m.find()) {
+                            String captured = m.group(2).replaceAll("[\\(\\)]", ""); // Remove parens
+                            if (!captured.isEmpty()) {
+                                answerChar = captured.charAt(0);
+                            }
+                        }
+
+                        if (answerChar != ' ') {
+                            int correctIndex = -1;
+                            if (answerChar == 'A' || answerChar == 'a')
+                                correctIndex = 0;
+                            else if (answerChar == 'B' || answerChar == 'b')
+                                correctIndex = 1;
+                            else if (answerChar == 'C' || answerChar == 'c')
+                                correctIndex = 2;
+                            else if (answerChar == 'D' || answerChar == 'd')
+                                correctIndex = 3;
                             currentQuestion.setCorrectOptionIndex(correctIndex);
                         }
                     }
                 }
             }
-
-            // add last question
             if (currentQuestion != null) {
                 if (currentQuestion.getCorrectOptionIndex() == -1) {
                     System.err.println(
-                            "Warning: No answer found for last question: "
-                                    + currentQuestion.getQuestionText());
+                            "Warning: No answer found for last question: " + currentQuestion.getQuestionText());
                 }
                 currentQuestion.setOptions(new ArrayList<>(currentOptions));
                 questions.add(currentQuestion);
             }
         }
-
         return questions;
     }
 }
