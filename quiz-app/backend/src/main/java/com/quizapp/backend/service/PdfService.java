@@ -50,6 +50,7 @@ public class PdfService {
             if (line.isEmpty())
                 continue;
 
+            // Detect Question: Flexible matching for headings
             if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
                 if (currentQuestion != null) {
                     currentQuestion.setOptions(new ArrayList<>(currentOptions));
@@ -60,9 +61,10 @@ public class PdfService {
                 currentQuestion.setCorrectOptionIndex(-1);
                 currentOptions.clear();
             } else if (line.matches("^\\s*[\\(]?[A-Da-d][\\)\\.]\\s+.*")) {
+                // Detect Option: Flexible matching (A), A., a), etc.
                 currentOptions.add(line);
             } else if (answersText == null && line.matches("(?i).*\\b(Answer|Ans|Correct|Key)[:\\s-]*[A-Da-d].*")) {
-                // Inline answer parsing (only if answersText is null)
+                // Inline answer parsing (only if external answersText is NOT provided)
                 if (currentQuestion != null) {
                     currentQuestion.setCorrectOptionIndex(extractAnswerFromLine(line));
                 }
@@ -75,9 +77,20 @@ public class PdfService {
 
         // Apply external answers if provided
         if (answersText != null && !answersText.isEmpty()) {
-            List<Integer> answers = extractAnswersFromText(answersText);
-            for (int i = 0; i < questions.size() && i < answers.size(); i++) {
-                questions.get(i).setCorrectOptionIndex(answers.get(i));
+            java.util.Map<Integer, Integer> answersMap = extractAnswersMap(answersText);
+            for (int i = 0; i < questions.size(); i++) {
+                int qNum = i + 1; // Default to sequential if parsing fails
+
+                // Try to extract actual question number from text if available
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)")
+                        .matcher(questions.get(i).getQuestionText());
+                if (m.find()) {
+                    qNum = Integer.parseInt(m.group(1));
+                }
+
+                if (answersMap.containsKey(qNum)) {
+                    questions.get(i).setCorrectOptionIndex(answersMap.get(qNum));
+                }
             }
         }
 
@@ -97,24 +110,28 @@ public class PdfService {
         return -1;
     }
 
-    private List<Integer> extractAnswersFromText(String text) {
-        List<Integer> answers = new ArrayList<>();
-        // Look for patterns like "1. A", "1) B", "Q1: C" or just a list of "A", "B",
-        // "C"
+    private java.util.Map<Integer, Integer> extractAnswersMap(String text) {
+        java.util.Map<Integer, Integer> answersMap = new java.util.HashMap<>();
+        // Look for patterns like "1. A", "1) B", "Q1: C", "Answer 1: D"
         java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("(?i)(?:^|\\s)(?:Question|Q)?\\s?\\d+[:\\.)\\s-]+([A-D])(?:$|\\s|\\))")
+                .compile("(?i)(?:Question|Q|Answer|Ans)?\\s?(\\d+)[:\\.)\\s-]+([A-D])(?:$|\\s|\\))")
                 .matcher(text);
         while (m.find()) {
-            answers.add(m.group(1).toUpperCase().charAt(0) - 'A');
+            int qNum = Integer.parseInt(m.group(1));
+            int ansIdx = m.group(2).toUpperCase().charAt(0) - 'A';
+            answersMap.put(qNum, ansIdx);
         }
 
-        if (answers.isEmpty()) {
-            // Fallback: just look for A, B, C, D in order
-            java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("(?i)\\b([A-D])\\b").matcher(text);
+        if (answersMap.isEmpty()) {
+            // Fallback: search for just "1 A", "2 B" etc. if the above fails
+            java.util.regex.Matcher m2 = java.util.regex.Pattern
+                    .compile("(\\d+)\\s+([A-D])\\b", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(text);
             while (m2.find()) {
-                answers.add(m2.group(1).toUpperCase().charAt(0) - 'A');
+                int qNum = Integer.parseInt(m2.group(1));
+                int ansIdx = m2.group(2).toUpperCase().charAt(0) - 'A';
+                answersMap.put(qNum, ansIdx);
             }
         }
-        return answers;
+        return answersMap;
     }
 }
