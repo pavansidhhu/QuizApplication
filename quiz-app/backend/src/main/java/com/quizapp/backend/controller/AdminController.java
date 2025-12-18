@@ -22,9 +22,10 @@ public class AdminController {
 
     @PostMapping("/upload-quiz")
     public ResponseEntity<Quiz> uploadQuiz(@RequestParam("title") String title,
-            @RequestParam("file") MultipartFile file) {
+            @RequestParam("questions") MultipartFile questions,
+            @RequestParam(value = "answers", required = false) MultipartFile answers) {
         try {
-            return ResponseEntity.ok(quizService.createQuizFromPdf(title, file));
+            return ResponseEntity.ok(quizService.createQuizFromPdf(title, questions, answers));
         } catch (IOException e) {
             return ResponseEntity.badRequest().build();
         }

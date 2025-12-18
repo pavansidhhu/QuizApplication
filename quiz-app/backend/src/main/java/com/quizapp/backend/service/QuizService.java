@@ -24,8 +24,9 @@ public class QuizService {
         this.pdfService = pdfService;
     }
 
-    public Quiz createQuizFromPdf(String title, MultipartFile file) throws IOException {
-        List<Question> questions = pdfService.parsePdf(file);
+    public Quiz createQuizFromPdf(String title, MultipartFile questionsFile, MultipartFile answersFile)
+            throws IOException {
+        List<Question> questions = pdfService.parseSplitPdfs(questionsFile, answersFile);
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);

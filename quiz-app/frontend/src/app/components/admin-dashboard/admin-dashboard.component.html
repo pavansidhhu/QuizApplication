@@ -1,6 +1,6 @@
 <div class="dashboard-container">
     <div class="dashboard-header">
-       <!-- <h1>Admin Dashboard</h1>-->
+        <!-- <h1>Admin Dashboard</h1>-->
         <button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
     </div>
 
@@ -16,11 +16,20 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="pdfFile">PDF File</label>
-                    <input type="file" id="pdfFile" accept=".pdf" (change)="onFileSelected($event)" class="form-control"
-                        required />
-                    @if (selectedFile) {
-                    <p class="file-selected">Selected: {{ selectedFile.name }}</p>
+                    <label for="questionsFile">Questions PDF</label>
+                    <input type="file" id="questionsFile" accept=".pdf" (change)="onQuestionsFileSelected($event)"
+                        class="form-control" required />
+                    @if (selectedQuestionsFile) {
+                    <p class="file-selected">Selected: {{ selectedQuestionsFile.name }}</p>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="answersFile">Answers PDF (Optional)</label>
+                    <input type="file" id="answersFile" accept=".pdf" (change)="onAnswersFileSelected($event)"
+                        class="form-control" />
+                    @if (selectedAnswersFile) {
+                    <p class="file-selected">Selected: {{ selectedAnswersFile.name }}</p>
                     }
                 </div>
 

@@ -32,7 +32,7 @@
 
                 <div class="options">
                     @for (option of question.options; track $index; let oIndex = $index) {
-                    <div class="option" [class.selected]="Answers[qIndex] === oIndex"
+                    <div class="option" [class.selected]="answers[qIndex] === oIndex"
                         (click)="selectAnswer(qIndex, oIndex)">
                         <span class="option-letter">{{ getOptionLetter(oIndex) }}</span>
                         <span class="option-text">{{ option }}</span>

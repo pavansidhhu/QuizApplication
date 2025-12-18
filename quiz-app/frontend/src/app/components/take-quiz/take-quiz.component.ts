@@ -13,7 +13,7 @@ import { AuthService } from '../../services/auth';
 })
 export class TakeQuizComponent implements OnInit {
     quiz: Quiz | null = null;
-    Answers: number[] = [];
+    answers: number[] = [];
     submitted = false;
     score = 0;
     totalQuestions = 0;
@@ -38,7 +38,7 @@ export class TakeQuizComponent implements OnInit {
             next: (quiz) => {
                 this.quiz = quiz;
                 this.totalQuestions = quiz.questions.length;
-                this.Answers = new Array(quiz.questions.length).fill(-1);
+                this.answers = new Array(quiz.questions.length).fill(-1);
                 this.loading = false;
             },
             error: () => {
@@ -49,11 +49,11 @@ export class TakeQuizComponent implements OnInit {
     }
 
     selectAnswer(questionIndex: number, optionIndex: number) {
-        this.Answers[questionIndex] = optionIndex;
+        this.answers[questionIndex] = optionIndex;
     }
 
     submitQuiz() {
-        if (this.Answers.includes(-1)) {
+        if (this.answers.includes(-1)) {
             alert('Please answer all questions before submitting');
             return;
         }
@@ -69,7 +69,7 @@ export class TakeQuizComponent implements OnInit {
             this.quiz.id!,
             user.id || '',
             user.username,
-            this.Answers
+            this.answers
         ).subscribe({
             next: (result) => {
                 this.score = result.score;
