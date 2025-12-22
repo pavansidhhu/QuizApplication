@@ -39,6 +39,82 @@ public class DocumentService {
         }
     }
 
+    public List<Question> parseSplitPdfs(MultipartFile questionsFile, MultipartFile answersFile) throws IOException {
+        // Parse questions from questions file
+        List<Question> questions = new ArrayList<>();
+        try (PDDocument qDoc = PDDocument.load(questionsFile.getInputStream())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            String questionsText = stripper.getText(qDoc);
+            questions = parseQuestionsOnly(questionsText);
+        }
+
+        // Parse answers from answers file
+        try (PDDocument aDoc = PDDocument.load(answersFile.getInputStream())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            String answersText = stripper.getText(aDoc);
+            parseAnswersIntoQuestions(answersText, questions);
+        }
+
+        return questions;
+    }
+
+    private List<Question> parseQuestionsOnly(String text) {
+        List<Question> questions = new ArrayList<>();
+        String[] lines = text.split("\\r?\\n");
+        Question currentQuestion = null;
+        List<String> currentOptions = new ArrayList<>();
+
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty())
+                continue;
+
+            if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
+                if (currentQuestion != null) {
+                    currentQuestion.setOptions(new ArrayList<>(currentOptions));
+                    detectQuestionType(currentQuestion, currentQuestion.getQuestionText());
+                    if (currentOptions.size() == 2 &&
+                            currentOptions.get(0).toLowerCase().contains("true") &&
+                            currentOptions.get(1).toLowerCase().contains("false")) {
+                        currentQuestion.setQuestionType(QuestionType.TRUE_FALSE);
+                    }
+                    questions.add(currentQuestion);
+                }
+                currentQuestion = new Question();
+                currentQuestion.setQuestionText(line);
+                currentOptions.clear();
+            } else if (OPTION_PATTERN.matcher(line).matches()) {
+                currentOptions.add(line);
+            }
+        }
+
+        if (currentQuestion != null) {
+            currentQuestion.setOptions(new ArrayList<>(currentOptions));
+            detectQuestionType(currentQuestion, currentQuestion.getQuestionText());
+            questions.add(currentQuestion);
+        }
+
+        return questions;
+    }
+
+    private void parseAnswersIntoQuestions(String text, List<Question> questions) {
+        String[] lines = text.split("\\r?\\n");
+        int currentQuestionIndex = 0;
+
+        for (String line : lines) {
+            line = line.trim();
+            if (line.isEmpty())
+                continue;
+
+            // Try to match answer pattern
+            if (ANSWER_PATTERN.matcher(line).matches() && currentQuestionIndex < questions.size()) {
+                Question question = questions.get(currentQuestionIndex);
+                parseAnswer(question, line, question.getOptions());
+                currentQuestionIndex++;
+            }
+        }
+    }
+
     private List<Question> parsePdf(MultipartFile file) throws IOException {
         try (PDDocument document = PDDocument.load(file.getInputStream())) {
             PDFTextStripper stripper = new PDFTextStripper();

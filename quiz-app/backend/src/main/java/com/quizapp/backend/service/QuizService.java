@@ -27,24 +27,27 @@ public class QuizService {
         this.documentService = documentService;
     }
 
-<<<<<<< HEAD
-    public Quiz createQuizFromDocument(String title, MultipartFile file) throws IOException {
-        List<Question> questions = documentService.parseDocument(file);
-
-=======
     public Quiz createQuizFromPdf(String title, MultipartFile questionsFile, MultipartFile answersFile)
             throws IOException {
-        List<Question> questions = pdfService.parseSplitPdfs(questionsFile, answersFile);
->>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
+        List<Question> questions;
+
+        if (answersFile != null && !answersFile.isEmpty()) {
+            // Parse questions and answers from separate files
+            questions = documentService.parseSplitPdfs(questionsFile, answersFile);
+        } else {
+            // Parse from single file containing both questions and answers
+            questions = documentService.parseDocument(questionsFile);
+        }
+
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);
 
-        // Store file for preview
-        quiz.setOriginalFileName(file.getOriginalFilename());
-        quiz.setFileContent(file.getBytes());
+        // Store questions file for preview
+        quiz.setOriginalFileName(questionsFile.getOriginalFilename());
+        quiz.setFileContent(questionsFile.getBytes());
 
-        String filename = file.getOriginalFilename();
+        String filename = questionsFile.getOriginalFilename();
         if (filename != null) {
             if (filename.toLowerCase().endsWith(".pdf")) {
                 quiz.setFileType("pdf");

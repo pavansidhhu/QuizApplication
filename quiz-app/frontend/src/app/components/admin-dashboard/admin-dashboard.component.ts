@@ -50,19 +50,6 @@ export class AdminDashboardComponent implements OnInit {
 
     onQuestionsFileSelected(event: any) {
         const file = event.target.files[0];
-<<<<<<< HEAD
-        if (file) {
-            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-            const validExtensions = ['.pdf', '.docx'];
-            const fileName = file.name.toLowerCase();
-
-            if (validTypes.includes(file.type) || validExtensions.some(ext => fileName.endsWith(ext))) {
-                this.selectedFile = file;
-            } else {
-                alert('Please select a PDF or DOCX file');
-                event.target.value = '';
-            }
-=======
         if (file && file.type === 'application/pdf') {
             this.selectedQuestionsFile = file;
         } else {
@@ -78,18 +65,12 @@ export class AdminDashboardComponent implements OnInit {
         } else {
             alert('Please select a PDF file for answers');
             event.target.value = '';
->>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
         }
     }
 
     uploadQuiz() {
-<<<<<<< HEAD
-        if (!this.quizTitle || !this.selectedFile) {
-            alert('Please enter a title and select a file');
-=======
         if (!this.quizTitle || !this.selectedQuestionsFile) {
             alert('Please enter a title and select the Questions PDF');
->>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
             return;
         }
 
