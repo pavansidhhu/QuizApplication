@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService, Result } from '../../services/api.service';
+import { ApiService, Result, QuizAttempt, Quiz } from '../../services/api.service';
 import { AuthService } from '../../services/auth';
 
 @Component({
@@ -15,10 +15,16 @@ export class AdminDashboardComponent implements OnInit {
     quizTitle = '';
     selectedFile: File | null = null;
     results: Result[] = [];
+    quizzes: Quiz[] = [];
     groupedResults: { [quizTitle: string]: Result[] } = {};
     quizTitles: string[] = [];
     loading = false;
     uploadMessage = '';
+
+    // Data Log modal
+    showDataLogModal = false;
+    activeStudents: QuizAttempt[] = [];
+    selectedQuizTitle = '';
 
     constructor(
         private apiService: ApiService,
@@ -27,6 +33,7 @@ export class AdminDashboardComponent implements OnInit {
 
     ngOnInit() {
         this.loadResults();
+        this.loadQuizzes();
     }
 
     groupResultsByQuiz() {
@@ -42,17 +49,23 @@ export class AdminDashboardComponent implements OnInit {
 
     onFileSelected(event: any) {
         const file = event.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            this.selectedFile = file;
-        } else {
-            alert('Please select a PDF file');
-            event.target.value = '';
+        if (file) {
+            const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            const validExtensions = ['.pdf', '.docx'];
+            const fileName = file.name.toLowerCase();
+
+            if (validTypes.includes(file.type) || validExtensions.some(ext => fileName.endsWith(ext))) {
+                this.selectedFile = file;
+            } else {
+                alert('Please select a PDF or DOCX file');
+                event.target.value = '';
+            }
         }
     }
 
     uploadQuiz() {
         if (!this.quizTitle || !this.selectedFile) {
-            alert('Please enter a title and select a PDF file');
+            alert('Please enter a title and select a file');
             return;
         }
 
@@ -67,6 +80,7 @@ export class AdminDashboardComponent implements OnInit {
                 const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
                 if (fileInput) fileInput.value = '';
                 this.loading = false;
+                this.loadQuizzes(); // Reload quizzes
             },
             error: (err) => {
                 alert('Failed to upload quiz: ' + (err.error?.message || 'Unknown error'));
@@ -85,6 +99,48 @@ export class AdminDashboardComponent implements OnInit {
                 console.error('Failed to load results', err);
             }
         });
+    }
+
+    loadQuizzes() {
+        this.apiService.getAllQuizzes().subscribe({
+            next: (quizzes) => {
+                this.quizzes = quizzes;
+            },
+            error: (err) => {
+                console.error('Failed to load quizzes', err);
+            }
+        });
+    }
+
+    previewQuiz(quizId: string) {
+        this.apiService.getQuizPreview(quizId).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            },
+            error: () => {
+                alert('Failed to load quiz preview');
+            }
+        });
+    }
+
+    showDataLog(quizId: string, quizTitle: string) {
+        this.selectedQuizTitle = quizTitle;
+        this.apiService.getActiveStudents(quizId).subscribe({
+            next: (attempts) => {
+                this.activeStudents = attempts;
+                this.showDataLogModal = true;
+            },
+            error: () => {
+                alert('Failed to load active students');
+            }
+        });
+    }
+
+    closeDataLogModal() {
+        this.showDataLogModal = false;
+        this.activeStudents = [];
+        this.selectedQuizTitle = '';
     }
 
     logout() {

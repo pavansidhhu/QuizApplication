@@ -12,4 +12,7 @@ public class Quiz {
     private String id;
     private String title;
     private List<Question> questions;
+    private String originalFileName;
+    private byte[] fileContent;
+    private String fileType; // "pdf" or "docx"
 }

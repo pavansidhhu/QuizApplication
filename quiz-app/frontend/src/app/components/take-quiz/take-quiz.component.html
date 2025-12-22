@@ -1,4 +1,11 @@
 <div class="quiz-container">
+    <!-- Tab Switch Warning -->
+    @if (showTabWarning) {
+    <div class="tab-warning-banner">
+        <strong>⚠️ {{ tabWarningMessage }}</strong>
+    </div>
+    }
+
     @if (loading) {
     <div class="card">
         <p class="loading">Loading quiz...</p>
@@ -22,7 +29,7 @@
     <!-- Quiz Questions -->
     <div class="card quiz-card">
         <h1>{{ quiz.title }}</h1>
-        <p class="quiz-info">{{ totalQuestions }} questions</p>
+        <p class="quiz-info">{{ totalQuestions }} questions | Tab Switches: {{ tabSwitchCount }} / {{ maxTabSwitches }}</p>
 
         <div class="questions-container">
             @for (question of quiz.questions; track $index; let qIndex = $index) {
@@ -30,6 +37,8 @@
                 <h3>Question {{ qIndex + 1 }}</h3>
                 <p class="question-text">{{ question.questionText }}</p>
 
+                <!-- MCQ and TRUE_FALSE: Show options -->
+                @if (question.questionType === 'MCQ' || question.questionType === 'TRUE_FALSE') {
                 <div class="options">
                     @for (option of question.options; track $index; let oIndex = $index) {
                     <div class="option" [class.selected]="answers[qIndex] === oIndex"
@@ -39,6 +48,20 @@
                     </div>
                     }
                 </div>
+                }
+
+                <!-- FILL_UP: Show text input -->
+                @if (question.questionType === 'FILL_UP') {
+                <div class="fill-up-input">
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Enter your answer..."
+                        [(ngModel)]="answers[qIndex]"
+                        (ngModelChange)="updateFillUpAnswer(qIndex, $event)"
+                    />
+                </div>
+                }
             </div>
             }
         </div>

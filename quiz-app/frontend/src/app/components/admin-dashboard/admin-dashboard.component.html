@@ -1,6 +1,6 @@
 <div class="dashboard-container">
     <div class="dashboard-header">
-       <!-- <h1>Admin Dashboard</h1>-->
+        <!-- <h1>Admin Dashboard</h1>-->
         <button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
     </div>
 
@@ -16,9 +16,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="pdfFile">PDF File</label>
-                    <input type="file" id="pdfFile" accept=".pdf" (change)="onFileSelected($event)" class="form-control"
-                        required />
+                    <label for="pdfFile">Quiz File (PDF or DOCX)</label>
+                    <input type="file" id="pdfFile" accept=".pdf,.docx" (change)="onFileSelected($event)"
+                        class="form-control" required />
                     @if (selectedFile) {
                     <p class="file-selected">Selected: {{ selectedFile.name }}</p>
                     }
@@ -36,6 +36,33 @@
                     }
                 </button>
             </form>
+        </div>
+
+        <!-- Uploaded Quizzes Section -->
+        <div class="card">
+            <h2>Manage Quizzes</h2>
+            @if (quizzes.length === 0) {
+            <p class="no-quizzes">No quizzes uploaded yet</p>
+            } @else {
+            <div class="quizzes-list">
+                @for (quiz of quizzes; track quiz.id) {
+                <div class="quiz-item">
+                    <div class="quiz-info">
+                        <h3>{{ quiz.title }}</h3>
+                        <p>{{ quiz.questions.length }} questions</p>
+                    </div>
+                    <div class="quiz-actions">
+                        <button class="btn btn-sm btn-info" (click)="previewQuiz(quiz.id!)">
+                            📄 Preview
+                        </button>
+                        <button class="btn btn-sm btn-warning" (click)="showDataLog(quiz.id!, quiz.title)">
+                            📊 Data Log
+                        </button>
+                    </div>
+                </div>
+                }
+            </div>
+            }
         </div>
 
         <!-- Results Section -->
@@ -88,4 +115,40 @@
             }
         </div>
     </div>
+
+    <!-- Data Log Modal -->
+    @if (showDataLogModal) {
+    <div class="modal-overlay" (click)="closeDataLogModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Active Students - {{ selectedQuizTitle }}</h2>
+                <button class="modal-close" (click)="closeDataLogModal()">×</button>
+            </div>
+            <div class="modal-body">
+                @if (activeStudents.length === 0) {
+                <p class="no-data">No students are currently taking this quiz</p>
+                } @else {
+                <table class="data-log-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Start Time</th>
+                            <th>Tab Switches</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (attempt of activeStudents; track attempt.id) {
+                        <tr>
+                            <td>{{ attempt.studentName }}</td>
+                            <td>{{ attempt.startTime | date:'short' }}</td>
+                            <td>{{ attempt.tabSwitchCount }}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+            </div>
+        </div>
+    </div>
+    }
 </div>
