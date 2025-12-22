@@ -27,9 +27,15 @@ public class QuizService {
         this.documentService = documentService;
     }
 
+<<<<<<< HEAD
     public Quiz createQuizFromDocument(String title, MultipartFile file) throws IOException {
         List<Question> questions = documentService.parseDocument(file);
 
+=======
+    public Quiz createQuizFromPdf(String title, MultipartFile questionsFile, MultipartFile answersFile)
+            throws IOException {
+        List<Question> questions = pdfService.parseSplitPdfs(questionsFile, answersFile);
+>>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);

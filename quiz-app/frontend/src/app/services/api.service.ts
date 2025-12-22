@@ -66,10 +66,13 @@ export class ApiService {
     }
 
     // Admin endpoints
-    uploadQuiz(title: string, file: File): Observable<Quiz> {
+    uploadQuiz(title: string, questionsFile: File, answersFile: File | null): Observable<Quiz> {
         const formData = new FormData();
         formData.append('title', title);
-        formData.append('file', file);
+        formData.append('questions', questionsFile);
+        if (answersFile) {
+            formData.append('answers', answersFile);
+        }
         return this.http.post<Quiz>(`${this.baseUrl}/admin/upload-quiz`, formData);
     }
 

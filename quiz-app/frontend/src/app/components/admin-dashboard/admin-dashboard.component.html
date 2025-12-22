@@ -16,11 +16,28 @@
                 </div>
 
                 <div class="form-group">
+<<<<<<< HEAD
                     <label for="pdfFile">Quiz File (PDF or DOCX)</label>
                     <input type="file" id="pdfFile" accept=".pdf,.docx" (change)="onFileSelected($event)"
                         class="form-control" required />
                     @if (selectedFile) {
                     <p class="file-selected">Selected: {{ selectedFile.name }}</p>
+=======
+                    <label for="questionsFile">Questions PDF</label>
+                    <input type="file" id="questionsFile" accept=".pdf" (change)="onQuestionsFileSelected($event)"
+                        class="form-control" required />
+                    @if (selectedQuestionsFile) {
+                    <p class="file-selected">Selected: {{ selectedQuestionsFile.name }}</p>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label for="answersFile">Answers PDF (Optional)</label>
+                    <input type="file" id="answersFile" accept=".pdf" (change)="onAnswersFileSelected($event)"
+                        class="form-control" />
+                    @if (selectedAnswersFile) {
+                    <p class="file-selected">Selected: {{ selectedAnswersFile.name }}</p>
+>>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
                     }
                 </div>
 

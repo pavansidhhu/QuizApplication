@@ -2,6 +2,9 @@ package com.quizapp.backend.controller;
 
 import com.quizapp.backend.model.User;
 import com.quizapp.backend.service.UserService;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,14 +33,20 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody User user) {
         try {
             User loggedInUser = userService.login(user.getUsername(), user.getPassword());
+
             if (loggedInUser != null) {
-                return ResponseEntity.ok(loggedInUser);
+                return ResponseEntity.ok(
+                        Map.of(
+                                "userId", loggedInUser.getId(),
+                                "role", loggedInUser.getRole().toUpperCase()));
             }
+
             return ResponseEntity.status(401).build();
+
         } catch (Exception e) {
             e.printStackTrace();
-            String errorMessage = "error in login";
-            return ResponseEntity.ok(errorMessage);
+            return ResponseEntity.status(500).body("error in login");
         }
     }
+
 }

@@ -13,7 +13,8 @@ import { AuthService } from '../../services/auth';
 })
 export class AdminDashboardComponent implements OnInit {
     quizTitle = '';
-    selectedFile: File | null = null;
+    selectedQuestionsFile: File | null = null;
+    selectedAnswersFile: File | null = null;
     results: Result[] = [];
     quizzes: Quiz[] = [];
     groupedResults: { [quizTitle: string]: Result[] } = {};
@@ -47,8 +48,9 @@ export class AdminDashboardComponent implements OnInit {
         this.quizTitles = Object.keys(this.groupedResults);
     }
 
-    onFileSelected(event: any) {
+    onQuestionsFileSelected(event: any) {
         const file = event.target.files[0];
+<<<<<<< HEAD
         if (file) {
             const validTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             const validExtensions = ['.pdf', '.docx'];
@@ -60,25 +62,50 @@ export class AdminDashboardComponent implements OnInit {
                 alert('Please select a PDF or DOCX file');
                 event.target.value = '';
             }
+=======
+        if (file && file.type === 'application/pdf') {
+            this.selectedQuestionsFile = file;
+        } else {
+            alert('Please select a PDF file for questions');
+            event.target.value = '';
+        }
+    }
+
+    onAnswersFileSelected(event: any) {
+        const file = event.target.files[0];
+        if (file && file.type === 'application/pdf') {
+            this.selectedAnswersFile = file;
+        } else {
+            alert('Please select a PDF file for answers');
+            event.target.value = '';
+>>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
         }
     }
 
     uploadQuiz() {
+<<<<<<< HEAD
         if (!this.quizTitle || !this.selectedFile) {
             alert('Please enter a title and select a file');
+=======
+        if (!this.quizTitle || !this.selectedQuestionsFile) {
+            alert('Please enter a title and select the Questions PDF');
+>>>>>>> 8d83965d481b0b08f1e80450379e764e5a50cbb7
             return;
         }
 
         this.loading = true;
         this.uploadMessage = '';
 
-        this.apiService.uploadQuiz(this.quizTitle, this.selectedFile).subscribe({
+        this.apiService.uploadQuiz(this.quizTitle, this.selectedQuestionsFile, this.selectedAnswersFile).subscribe({
             next: (quiz) => {
                 this.uploadMessage = 'Quiz uploaded successfully!';
                 this.quizTitle = '';
-                this.selectedFile = null;
-                const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
-                if (fileInput) fileInput.value = '';
+                this.selectedQuestionsFile = null;
+                this.selectedAnswersFile = null;
+                const qInput = document.getElementById('questionsFile') as HTMLInputElement;
+                const aInput = document.getElementById('answersFile') as HTMLInputElement;
+                if (qInput) qInput.value = '';
+                if (aInput) aInput.value = '';
                 this.loading = false;
                 this.loadQuizzes(); // Reload quizzes
             },
