@@ -83,12 +83,27 @@ public class QuizService {
         int score = 0;
         List<Question> questions = quiz.getQuestions();
 
+        System.out.println("=== QUIZ SUBMISSION DEBUG ===");
+        System.out.println("Quiz ID: " + quizId);
+        System.out.println("Student: " + studentName);
+        System.out.println("Total Questions: " + questions.size());
+        System.out.println("Answers received: " + answers);
+
         for (int i = 0; i < questions.size(); i++) {
             Question question = questions.get(i);
             Object answer = answers.get(i);
 
-            if (answer == null)
+            System.out.println("\n--- Question " + (i + 1) + " ---");
+            System.out.println("Question Type: " + question.getQuestionType());
+            System.out.println("Question Text: " + question.getQuestionText());
+            System.out.println("Correct Option Index: " + question.getCorrectOptionIndex());
+            System.out.println("Student Answer (raw): " + answer + " (type: "
+                    + (answer != null ? answer.getClass().getSimpleName() : "null") + ")");
+
+            if (answer == null) {
+                System.out.println("Answer is null, skipping");
                 continue;
+            }
 
             boolean isCorrect = false;
 
@@ -97,15 +112,27 @@ public class QuizService {
                     question.getQuestionType() == QuestionType.TRUE_FALSE) {
                 // For MCQ and TRUE_FALSE, answer should be an integer (option index)
                 if (answer instanceof Integer) {
-                    isCorrect = answer.equals(question.getCorrectOptionIndex());
+                    int studentAnswer = (Integer) answer;
+                    isCorrect = studentAnswer == question.getCorrectOptionIndex();
+                    System.out.println("Integer comparison: " + studentAnswer + " == "
+                            + question.getCorrectOptionIndex() + " ? " + isCorrect);
                 } else if (answer instanceof String) {
                     try {
                         int answerIndex = Integer.parseInt((String) answer);
                         isCorrect = answerIndex == question.getCorrectOptionIndex();
+                        System.out.println("String->Int comparison: " + answerIndex + " == "
+                                + question.getCorrectOptionIndex() + " ? " + isCorrect);
                     } catch (NumberFormatException e) {
                         // Invalid answer format
                         isCorrect = false;
+                        System.out.println("Failed to parse answer as integer: " + answer);
                     }
+                } else if (answer instanceof Double) {
+                    // JSON might send numbers as Double
+                    int answerIndex = ((Double) answer).intValue();
+                    isCorrect = answerIndex == question.getCorrectOptionIndex();
+                    System.out.println("Double->Int comparison: " + answerIndex + " == "
+                            + question.getCorrectOptionIndex() + " ? " + isCorrect);
                 }
             } else if (question.getQuestionType() == QuestionType.FILL_UP) {
                 // For FILL_UP, answer should be a string
@@ -113,13 +140,20 @@ public class QuizService {
                     String studentAnswer = ((String) answer).trim().toLowerCase();
                     String correctAnswer = question.getCorrectAnswer().trim().toLowerCase();
                     isCorrect = studentAnswer.equals(correctAnswer);
+                    System.out.println(
+                            "String comparison: '" + studentAnswer + "' == '" + correctAnswer + "' ? " + isCorrect);
                 }
             }
 
             if (isCorrect) {
                 score++;
+                System.out.println("✓ CORRECT");
+            } else {
+                System.out.println("✗ INCORRECT");
             }
         }
+
+        System.out.println("\n=== FINAL SCORE: " + score + "/" + questions.size() + " ===\n");
 
         Result result = new Result();
         result.setQuizId(quizId);
