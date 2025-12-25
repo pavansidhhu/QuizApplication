@@ -144,8 +144,19 @@ public class DocumentService {
             if (line.isEmpty())
                 continue;
 
-            // Check if this is a question line
-            if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
+            // Check for answer line first (it might be on the same line as the last option
+            // or question)
+            if (ANSWER_PATTERN.matcher(line).matches()) {
+                if (currentQuestion != null) {
+                    parseAnswer(currentQuestion, line, currentOptions);
+                }
+            }
+            // Then check for option line
+            else if (OPTION_PATTERN.matcher(line).matches()) {
+                currentOptions.add(line);
+            }
+            // Then check if this is a question line
+            else if (line.matches("(?i)^(Question|Q)[:\\.]?.*") || QUESTION_PATTERN.matcher(line).matches()) {
                 // Save previous question if exists
                 if (currentQuestion != null) {
                     finalizeQuestion(currentQuestion, currentOptions, questions);
@@ -158,16 +169,6 @@ public class DocumentService {
 
                 // Detect question type from the question text
                 detectQuestionType(currentQuestion, line);
-
-            } else if (OPTION_PATTERN.matcher(line).matches()) {
-                // This is an option line
-                currentOptions.add(line);
-
-            } else if (ANSWER_PATTERN.matcher(line).matches()) {
-                // This is an answer line
-                if (currentQuestion != null) {
-                    parseAnswer(currentQuestion, line, currentOptions);
-                }
             } else if (currentQuestion != null && currentQuestion.getQuestionType() == QuestionType.FILL_UP) {
                 // For fill-up questions, the next line might be the answer
                 if (line.matches("(?i)^(Answer|Ans)[:\\s-].*")) {
@@ -242,13 +243,15 @@ public class DocumentService {
         } else {
             // For MCQ and TRUE_FALSE, extract the option letter
             char answerChar = ' ';
+
+            // Look for keywords followed by the letter
             java.util.regex.Matcher m = java.util.regex.Pattern
                     .compile("(?i)(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
                     .matcher(answerLine);
 
             System.out.println("DEBUG [parseAnswer]: Parsing answer from line: " + answerLine);
 
-            while (m.find()) {
+            if (m.find()) { // Changed from while to if to take the FIRST match
                 String captured = m.group(2).replaceAll("[\\(\\)]", "");
                 if (!captured.isEmpty()) {
                     answerChar = captured.charAt(0);
@@ -256,15 +259,28 @@ public class DocumentService {
                 }
             }
 
+            // If no keyword found, try to match just the letter at the start of the line or
+            // after a dot
+            if (answerChar == ' ') {
+                java.util.regex.Matcher m2 = java.util.regex.Pattern
+                        .compile("(?i)^(\\d+\\.\\s*)?([\\(]?([A-Da-d])[\\)]?)$")
+                        .matcher(answerLine);
+                if (m2.find()) {
+                    answerChar = m2.group(3).charAt(0);
+                    System.out.println("DEBUG [parseAnswer]: Extracted letter from standalone match: " + answerChar);
+                }
+            }
+
             if (answerChar != ' ') {
                 int correctIndex = -1;
-                if (answerChar == 'A' || answerChar == 'a')
+                char lowerChar = Character.toLowerCase(answerChar);
+                if (lowerChar == 'a')
                     correctIndex = 0;
-                else if (answerChar == 'B' || answerChar == 'b')
+                else if (lowerChar == 'b')
                     correctIndex = 1;
-                else if (answerChar == 'C' || answerChar == 'c')
+                else if (lowerChar == 'c')
                     correctIndex = 2;
-                else if (answerChar == 'D' || answerChar == 'd')
+                else if (lowerChar == 'd')
                     correctIndex = 3;
 
                 question.setCorrectOptionIndex(correctIndex);
