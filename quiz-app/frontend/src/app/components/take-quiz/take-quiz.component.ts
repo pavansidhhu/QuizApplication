@@ -118,6 +118,7 @@ export class TakeQuizComponent implements OnInit, OnDestroy {
 
     selectAnswer(questionIndex: number, optionIndex: number) {
         this.answers[questionIndex] = optionIndex;
+        console.log(`DEBUG: Selected option ${optionIndex} (${this.getOptionLetter(optionIndex)}) for question ${questionIndex + 1}`);
     }
 
     updateFillUpAnswer(questionIndex: number, value: string) {
@@ -151,6 +152,14 @@ export class TakeQuizComponent implements OnInit, OnDestroy {
 
         const user = this.authService.getUser();
         if (!user || !this.quiz) return;
+
+        console.log('DEBUG: Submitting quiz with answers:', this.answers);
+        console.log('DEBUG: Quiz questions:', this.quiz.questions.map((q, i) => ({
+            index: i,
+            text: q.questionText,
+            correctIndex: q.correctOptionIndex,
+            studentAnswer: this.answers[i]
+        })));
 
         this.apiService.submitQuiz(
             this.quiz.id!,

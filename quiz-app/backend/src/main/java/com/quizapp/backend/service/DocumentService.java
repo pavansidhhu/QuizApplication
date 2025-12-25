@@ -238,6 +238,7 @@ public class DocumentService {
             // For fill-up, extract the text answer
             String answer = answerLine.replaceFirst("(?i).*(Answer|Ans|Correct|Key)[:\\s-]+", "").trim();
             question.setCorrectAnswer(answer);
+            System.out.println("DEBUG [parseAnswer]: FILL_UP answer set to: " + answer);
         } else {
             // For MCQ and TRUE_FALSE, extract the option letter
             char answerChar = ' ';
@@ -245,10 +246,13 @@ public class DocumentService {
                     .compile("(?i)(Answer|Ans|Correct|Correct Option|Key)[:\\s-]*([\\(]?[A-Da-d][\\)]?)")
                     .matcher(answerLine);
 
+            System.out.println("DEBUG [parseAnswer]: Parsing answer from line: " + answerLine);
+
             while (m.find()) {
                 String captured = m.group(2).replaceAll("[\\(\\)]", "");
                 if (!captured.isEmpty()) {
                     answerChar = captured.charAt(0);
+                    System.out.println("DEBUG [parseAnswer]: Extracted answer character: " + answerChar);
                 }
             }
 
@@ -264,6 +268,10 @@ public class DocumentService {
                     correctIndex = 3;
 
                 question.setCorrectOptionIndex(correctIndex);
+                System.out.println("DEBUG [parseAnswer]: Set correctOptionIndex to: " + correctIndex + " for answer '"
+                        + answerChar + "'");
+            } else {
+                System.out.println("WARNING [parseAnswer]: No answer character found in line: " + answerLine);
             }
         }
     }
